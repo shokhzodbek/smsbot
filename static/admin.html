@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fast Education — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #f5f3ef; --surface: #ffffff; --surface2: #f0ede8;
+  --text: #1a1a1a; --text2: #6b6560; --text3: #9e9890;
+  --border: #e5e1db; --accent: #2563eb; --accent-bg: #eff6ff;
+  --green: #16a34a; --green-bg: #f0fdf4;
+  --red: #dc2626; --red-bg: #fef2f2;
+  --amber: #d97706; --amber-bg: #fffbeb;
+  --purple: #7c3aed; --purple-bg: #f5f3ff;
+  --radius: 12px; --shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+body {
+  font-family: 'DM Sans', sans-serif; background: var(--bg);
+  color: var(--text); min-height: 100vh;
+}
+
+/* ─── Login ─── */
+#login-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 1rem;
+}
+.login-box {
+  background: var(--surface); border-radius: var(--radius); padding: 2.5rem;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  width: 100%; max-width: 380px; text-align: center;
+}
+.login-box h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+.login-box p { color: var(--text2); font-size: 0.875rem; margin-bottom: 1.5rem; }
+.login-box input {
+  width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.95rem; font-family: inherit;
+  outline: none; transition: border 0.2s;
+}
+.login-box input:focus { border-color: var(--accent); }
+.login-box button {
+  width: 100%; padding: 0.75rem; margin-top: 1rem; background: var(--accent);
+  color: #fff; border: none; border-radius: 8px; font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.2s;
+}
+.login-box button:hover { opacity: 0.9; }
+.login-error { color: var(--red); font-size: 0.8rem; margin-top: 0.75rem; display: none; }
+
+/* ─── App ─── */
+#app { display: none; }
+.topbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.5rem; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 10;
+}
+.topbar h1 { font-size: 1.1rem; font-weight: 700; }
+.topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+.topbar button {
+  padding: 0.4rem 0.75rem; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); cursor: pointer; font-family: inherit;
+  font-size: 0.8rem; color: var(--text2); transition: all 0.2s;
+}
+.topbar button:hover { background: var(--surface2); }
+.status-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; display: inline-block; }
+
+.container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex; gap: 0.25rem; margin-bottom: 1.5rem;
+  background: var(--surface2); border-radius: 10px; padding: 4px;
+}
+.tab {
+  padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;
+  font-size: 0.85rem; font-weight: 500; color: var(--text2);
+  transition: all 0.2s; border: none; background: none; font-family: inherit;
+}
+.tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tab:hover:not(.active) { color: var(--text); }
+.tab-badge {
+  background: var(--red); color: #fff; font-size: 0.65rem;
+  padding: 1px 5px; border-radius: 10px; margin-left: 4px; font-weight: 600;
+}
+
+/* ─── Stats Grid ─── */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 1rem 1.25rem; border: 1px solid var(--border);
+}
+.stat-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.stat-value { font-size: 1.75rem; font-weight: 700; margin-top: 0.25rem; }
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.red .stat-value { color: var(--red); }
+.stat-card.amber .stat-value { color: var(--amber); }
+.stat-card.purple .stat-value { color: var(--purple); }
+.stat-card.blue .stat-value { color: var(--accent); }
+
+/* ─── Table ─── */
+.table-wrap {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--border); overflow: hidden;
+}
+.table-header {
+  padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+}
+.table-header h2 { font-size: 1rem; font-weight: 600; }
+.table-filter {
+  display: flex; gap: 0.5rem; align-items: center;
+}
+.table-filter select, .table-filter input {
+  padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px;
+  font-family: inherit; font-size: 0.8rem; outline: none;
+}
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+thead th {
+  text-align: left; padding: 0.6rem 1rem; background: var(--surface2);
+  font-weight: 600; color: var(--text2); font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+tbody td { padding: 0.65rem 1rem; border-top: 1px solid var(--border); }
+tbody tr:hover { background: var(--surface2); }
+.badge {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  font-size: 0.72rem; font-weight: 600;
+}
+.badge-sent { background: var(--green-bg); color: var(--green); }
+.badge-failed { background: var(--red-bg); color: var(--red); }
+.badge-undelivered { background: var(--amber-bg); color: var(--amber); }
+.badge-active { background: var(--green-bg); color: var(--green); }
+.badge-inactive { background: var(--surface2); color: var(--text3); }
+
+.btn-sm {
+  padding: 0.3rem 0.6rem; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface); cursor: pointer; font-size: 0.75rem;
+  font-family: inherit; transition: all 0.15s;
+}
+.btn-sm:hover { background: var(--surface2); }
+.btn-danger { border-color: var(--red); color: var(--red); }
+.btn-danger:hover { background: var(--red-bg); }
+.btn-green { border-color: var(--green); color: var(--green); }
+.btn-green:hover { background: var(--green-bg); }
+
+.empty-state {
+  text-align: center; padding: 3rem; color: var(--text3); font-size: 0.9rem;
+}
+
+.section-title { font-size: 0.8rem; color: var(--text3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+
+/* ─── Panel sections ─── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ─── Connection Bar ─── */
+.connection-bar {
+  height: 8px; border-radius: 4px; background: var(--surface2);
+  overflow: hidden; margin-bottom: 0.5rem;
+}
+.connection-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.5s; }
+.connection-label { font-size: 0.8rem; color: var(--text2); }
+
+/* ─── Queue indicator ─── */
+.queue-info {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.8rem; color: var(--text2); margin-left: 8px;
+}
+.queue-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); display: inline-block;
+}
+.queue-dot.busy { background: var(--amber); animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: 0.5; } }
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .tabs { overflow-x: auto; flex-wrap: nowrap; }
+  .tab { white-space: nowrap; font-size: 0.8rem; }
+  table { font-size: 0.78rem; }
+  thead th, tbody td { padding: 0.5rem 0.6rem; }
+  .table-header { flex-direction: column; align-items: flex-start; }
+}
+
+.loading { text-align: center; padding: 2rem; color: var(--text3); }
+.refresh-spin { animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Fast Education</h1>
+    <p>Admin Dashboard</p>
+    <input type="password" id="password-input" placeholder="Admin parol" autofocus>
+    <button onclick="doLogin()">Kirish</button>
+    <div class="login-error" id="login-error">Parol noto'g'ri</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <h1>Fast Education Admin</h1>
+    <div class="topbar-right">
+      <span>
+        <span class="status-dot"></span>
+        <span style="font-size:0.8rem;color:var(--text2)" id="last-update">—</span>
+        <span class="queue-info" id="queue-info" style="display:none">
+          | <span class="queue-dot" id="queue-dot"></span> <span id="queue-text">0</span>
+        </span>
+      </span>
+      <button onclick="refreshAll()" id="refresh-btn">Yangilash</button>
+      <button onclick="doLogout()">Chiqish</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="overview">Umumiy</button>
+      <button class="tab" data-tab="parents">Ota-onalar</button>
+      <button class="tab" data-tab="unconnected">Ulanmaganlar <span class="tab-badge" id="uncon-badge" style="display:none">0</span></button>
+      <button class="tab" data-tab="notifications">Bildirishnomalar</button>
+      <button class="tab" data-tab="errors">Xatoliklar <span class="tab-badge" id="err-badge" style="display:none">0</span></button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="panel active" id="panel-overview">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="section-title">Ulanish holati</div>
+      <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:1.25rem;margin-bottom:1.5rem;">
+        <div class="connection-bar"><div class="connection-fill" id="conn-fill" style="width:0%"></div></div>
+        <div class="connection-label" id="conn-label">Yuklanmoqda...</div>
+      </div>
+      <div class="section-title">So'nggi bildirishnomalar</div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>O'quvchi</th><th>Baho</th><th>Holat</th><th>Vaqt</th></tr></thead>
+          <tbody id="recent-notifs"><tr><td colspan="4" class="loading">Yuklanmoqda...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PARENTS -->
+    <div class="panel" id="panel-parents">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h2>Ro'yxatdagi ota-onalar</h2>
+          <div class="table-filter">
+            <input type="text" placeholder="Telefon bo'yicha qidirish..." id="parent-search" oninput="filterParents()">
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>#</th><th>Telefon</th><th>Telegram ID</th><th>Sana</th><th>Holat</th><th>Amal</th></tr></thead>
+            <tbody id="parents-table"><tr><td colspan="6" class="loading">Yuklanmoqda...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- UNCONNECTED -->
+    <div class="panel" id="panel-unconnected">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h2>Ulanmagan ota-onalar</h2>
+          <p style="font-size:0.8rem;color:var(--text3)">Google Sheets da bor, lekin bot ga ulanmagan raqamlar</p>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Telefon</th><th>O'quvchi</th><th>Sheet</th><th>Oxirgi ko'rilgan</th></tr></thead>
+            <tbody id="unconnected-table"><tr><td colspan="4" class="loading">Yuklanmoqda...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div class="panel" id="panel-notifications">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h2>Bildirishnomalar tarixi</h2>
+          <div class="table-filter">
+            <select id="notif-filter" onchange="loadNotifications()">
+              <option value="">Hammasi</option>
+              <option value="sent">Yuborilgan</option>
+              <option value="failed">Xato</option>
+              <option value="undelivered">Yetkazilmagan</option>
+            </select>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>O'quvchi</th><th>Baho</th><th>Telefon</th><th>Holat</th><th>Xato</th><th>Vaqt</th></tr></thead>
+            <tbody id="notifs-table"><tr><td colspan="6" class="loading">Yuklanmoqda...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ERRORS -->
+    <div class="panel" id="panel-errors">
+      <div class="table-wrap">
+        <div class="table-header">
+          <h2>Xatoliklar jurnali</h2>
+          <button class="btn-sm btn-danger" onclick="clearErrors()">Tozalash</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Tur</th><th>Xabar</th><th>Tafsilotlar</th><th>Vaqt</th></tr></thead>
+            <tbody id="errors-table"><tr><td colspan="4" class="loading">Yuklanmoqda...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let TOKEN = '';
+let allParents = [];
+
+// ─── Auth ───
+function doLogin() {
+  TOKEN = document.getElementById('password-input').value;
+  fetch('/api/stats', { headers: { 'Authorization': 'Bearer ' + TOKEN } })
+    .then(r => {
+      if (!r.ok) throw new Error();
+      return r.json();
+    })
+    .then(() => {
+      localStorage.setItem('admin_token', TOKEN);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      refreshAll();
+    })
+    .catch(() => {
+      document.getElementById('login-error').style.display = 'block';
+    });
+}
+function doLogout() {
+  localStorage.removeItem('admin_token');
+  TOKEN = '';
+  location.reload();
+}
+document.getElementById('password-input').addEventListener('keyup', e => { if (e.key === 'Enter') doLogin(); });
+
+// Auto-login
+const saved = localStorage.getItem('admin_token');
+if (saved) { TOKEN = saved; doLogin(); }
+
+// ─── API ───
+function api(path) {
+  return fetch(path, { headers: { 'Authorization': 'Bearer ' + TOKEN } }).then(r => r.json());
+}
+
+// ─── Tabs ───
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// ─── Format datetime ───
+function fmtDate(s) {
+  if (!s) return '—';
+  return String(s).slice(0, 16).replace('T', ' ');
+}
+
+// ─── Load Stats ───
+function loadStats() {
+  return api('/api/stats').then(s => {
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card blue"><div class="stat-label">Ota-onalar</div><div class="stat-value">${s.total_parents}</div></div>
+      <div class="stat-card green"><div class="stat-label">Yuborilgan</div><div class="stat-value">${s.sent}</div></div>
+      <div class="stat-card red"><div class="stat-label">Xato</div><div class="stat-value">${s.failed}</div></div>
+      <div class="stat-card amber"><div class="stat-label">Yetkazilmagan</div><div class="stat-value">${s.undelivered}</div></div>
+      <div class="stat-card purple"><div class="stat-label">Bugun</div><div class="stat-value">${s.today}</div></div>
+      <div class="stat-card"><div class="stat-label">Jurnaldagi raqamlar</div><div class="stat-value">${s.known_phones}</div></div>
+    `;
+    // Connection bar
+    const pct = s.known_phones > 0 ? Math.round((s.connected / s.known_phones) * 100) : 0;
+    document.getElementById('conn-fill').style.width = pct + '%';
+    document.getElementById('conn-label').textContent =
+      `${s.connected} / ${s.known_phones} ulangan (${pct}%) — ${s.unconnected} ulanmagan`;
+
+    // Queue indicator
+    const qi = document.getElementById('queue-info');
+    if (s.queue_size > 0) {
+      qi.style.display = 'inline-flex';
+      document.getElementById('queue-dot').className = 'queue-dot busy';
+      document.getElementById('queue-text').textContent = s.queue_size + ' navbatda';
+    } else {
+      qi.style.display = 'none';
+    }
+
+    // Badges
+    if (s.unconnected > 0) {
+      document.getElementById('uncon-badge').style.display = 'inline';
+      document.getElementById('uncon-badge').textContent = s.unconnected;
+    } else {
+      document.getElementById('uncon-badge').style.display = 'none';
+    }
+    if (s.errors > 0) {
+      document.getElementById('err-badge').style.display = 'inline';
+      document.getElementById('err-badge').textContent = s.errors;
+    } else {
+      document.getElementById('err-badge').style.display = 'none';
+    }
+
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+  });
+}
+
+// ─── Load Parents ───
+function loadParents() {
+  return api('/api/parents').then(data => {
+    allParents = data;
+    renderParents(data);
+  });
+}
+function renderParents(data) {
+  const tb = document.getElementById('parents-table');
+  if (!data.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">Hech kim yo\'q</td></tr>'; return; }
+  tb.innerHTML = data.map((p, i) => `<tr>
+    <td>${i + 1}</td>
+    <td><strong>${p.phone}</strong></td>
+    <td>${p.telegram_id}</td>
+    <td>${fmtDate(p.registered_at)}</td>
+    <td><span class="badge ${p.is_active ? 'badge-active' : 'badge-inactive'}">${p.is_active ? 'Aktiv' : 'Nofaol'}</span></td>
+    <td>${p.is_active
+      ? `<button class="btn-sm btn-danger" onclick="deactivateParent(${p.id})">O'chirish</button>`
+      : `<button class="btn-sm btn-green" onclick="activateParent(${p.id})">Qaytarish</button>`
+    }</td>
+  </tr>`).join('');
+}
+function filterParents() {
+  const q = document.getElementById('parent-search').value.toLowerCase();
+  renderParents(allParents.filter(p => p.phone.includes(q)));
+}
+function deactivateParent(id) {
+  if (!confirm("Bu ota-onani o'chirishni xohlaysizmi?")) return;
+  fetch(`/api/parents/${id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + TOKEN } })
+    .then(() => { loadParents(); loadStats(); });
+}
+function activateParent(id) {
+  fetch(`/api/parents/${id}/activate`, { method: 'POST', headers: { 'Authorization': 'Bearer ' + TOKEN } })
+    .then(() => { loadParents(); loadStats(); });
+}
+
+// ─── Unconnected ───
+function loadUnconnected() {
+  return api('/api/unconnected').then(data => {
+    const tb = document.getElementById('unconnected-table');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="4" class="empty-state">Hammasi ulangan!</td></tr>'; return; }
+    tb.innerHTML = data.map(u => `<tr>
+      <td><strong>${u.phone}</strong></td>
+      <td>${u.student_name}</td>
+      <td>${u.sheet_name || '—'}</td>
+      <td>${fmtDate(u.last_seen)}</td>
+    </tr>`).join('');
+  });
+}
+
+// ─── Notifications ───
+function loadNotifications() {
+  const f = document.getElementById('notif-filter').value;
+  const url = f ? `/api/notifications?status=${f}&limit=200` : '/api/notifications?limit=200';
+  api(url).then(data => {
+    const tb = document.getElementById('notifs-table');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="6" class="empty-state">Bo\'sh</td></tr>'; return; }
+    tb.innerHTML = data.map(n => `<tr>
+      <td>${n.student_name || '—'}</td>
+      <td><strong>${n.mark || '—'}</strong></td>
+      <td>${n.phone_matched || '—'}</td>
+      <td><span class="badge badge-${n.status}">${n.status === 'sent' ? 'Yuborildi' : n.status === 'failed' ? 'Xato' : 'Yetkazilmadi'}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text3)">${n.error_message || '—'}</td>
+      <td>${fmtDate(n.sent_at)}</td>
+    </tr>`).join('');
+  });
+  // Recent for overview
+  return api('/api/notifications?limit=5').then(data => {
+    const tb = document.getElementById('recent-notifs');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="4" class="empty-state">Hali bildirishnoma yo\'q</td></tr>'; return; }
+    tb.innerHTML = data.map(n => `<tr>
+      <td>${n.student_name || '—'}</td>
+      <td><strong>${n.mark || '—'}</strong></td>
+      <td><span class="badge badge-${n.status}">${n.status === 'sent' ? 'Yuborildi' : n.status === 'failed' ? 'Xato' : '—'}</span></td>
+      <td style="color:var(--text3)">${fmtDate(n.sent_at)}</td>
+    </tr>`).join('');
+  });
+}
+
+// ─── Errors ───
+function loadErrors() {
+  return api('/api/errors').then(data => {
+    const tb = document.getElementById('errors-table');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="4" class="empty-state">Xatolik yo\'q</td></tr>'; return; }
+    tb.innerHTML = data.map(e => `<tr>
+      <td><span class="badge badge-failed">${e.error_type}</span></td>
+      <td>${e.message}</td>
+      <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text3)">${e.details || '—'}</td>
+      <td>${fmtDate(e.created_at)}</td>
+    </tr>`).join('');
+  });
+}
+function clearErrors() {
+  if (!confirm("Barcha xatoliklarni tozalashni xohlaysizmi?")) return;
+  fetch('/api/errors/clear', { method: 'POST', headers: { 'Authorization': 'Bearer ' + TOKEN } })
+    .then(() => { loadErrors(); loadStats(); });
+}
+
+// ─── Refresh All ───
+function refreshAll() {
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML = '<span class="refresh-spin">↻</span>';
+  Promise.all([loadStats(), loadParents(), loadUnconnected(), loadNotifications(), loadErrors()])
+    .finally(() => { btn.innerHTML = 'Yangilash'; });
+}
+
+// Auto-refresh every 30s
+setInterval(refreshAll, 30000);
+</script>
+</body>
+</html>

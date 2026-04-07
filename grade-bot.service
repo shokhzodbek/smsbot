@@ -1,0 +1,15 @@
+[Unit]
+Description=Fast Education Telegram Bot (Aiogram + FastAPI)
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/fast-bot
+EnvironmentFile=/home/ubuntu/fast-bot/.env
+ExecStart=/home/ubuntu/fast-bot/venv/bin/python run.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
