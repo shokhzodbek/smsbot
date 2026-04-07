@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from config import WEBHOOK_SECRET, ADMIN_PASSWORD, API_PORT, normalize_phone, log
 import db
 from sender import message_queue, init_queue, telegram_sender_worker
-from telegram_bot import bot, dp
+from telegram_bot import bot, dp, setup_bot_commands
 
 
 # ─── Lifespan ────────────────────────────────────────────
@@ -25,6 +25,9 @@ async def lifespan(app: FastAPI):
         task = asyncio.create_task(telegram_sender_worker(i))
         workers.append(task)
     log.info("Started 3 Telegram sender workers")
+
+    await setup_bot_commands()
+    log.info("Telegram commands menu updated")
 
     # Start Aiogram polling in background
     polling_task = asyncio.create_task(dp.start_polling(bot, handle_signals=False))

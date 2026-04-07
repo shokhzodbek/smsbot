@@ -31,6 +31,7 @@ async def init_db():
                 sent_at TIMESTAMP DEFAULT NOW()
             )
         """)
+        await conn.execute("ALTER TABLE notifications_log ADD COLUMN IF NOT EXISTS sheet_name TEXT")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_notif_status ON notifications_log(status)")
         await conn.execute("CREATE INDEX IF NOT EXISTS idx_notif_date ON notifications_log(sent_at)")
 

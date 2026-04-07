@@ -1,5 +1,5 @@
 from aiogram import Bot, Dispatcher, Router
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardRemove, BotCommand
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -14,6 +14,14 @@ dp = Dispatcher(storage=storage)
 router = Router()
 
 
+async def setup_bot_commands():
+    await bot.set_my_commands([
+        BotCommand(command="start", description="Botni ishga tushurish"),
+        BotCommand(command="help", description="Yordam"),
+        BotCommand(command="register", description="Ro'yxatdan o'tish"),
+        BotCommand(command="status", description="Holatni ko'rish"),
+        BotCommand(command="unregister", description="Bildirishnomani o'chirish"),
+    ])
 class Registration(StatesGroup):
     phone_input = State()
 
@@ -25,7 +33,8 @@ async def cmd_start(message: Message):
         "Fast Education bildirishnoma boti.\n\n"
         "📱 /register — Ro'yxatdan o'tish\n"
         "📋 /status — Holat\n"
-        "🛑 /unregister — To'xtatish")
+        "🛑 /unregister — To'xtatish",
+        reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(Command("help"))
@@ -33,7 +42,8 @@ async def cmd_help(message: Message):
     await message.answer(
         "📖 /register → jurnaldagi telefon raqamni kiriting.\n"
         "O'qituvchi baho qo'yadi → sizga xabar keladi.\n"
-        "⚠️ Raqam jurnaldagi bilan bir xil bo'lishi shart!")
+        "⚠️ Raqam jurnaldagi bilan bir xil bo'lishi shart!",
+        reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(Command("register"))
@@ -95,10 +105,11 @@ async def cmd_status(message: Message):
             "SELECT phone FROM parents WHERE telegram_id=$1 AND is_active=1",
             message.from_user.id)
     if not rows:
-        await message.answer("❌ Ro'yxatda emassiz. /register")
+        await message.answer("❌ Ro'yxatda emassiz. /register", reply_markup=ReplyKeyboardRemove())
         return
     await message.answer(
-        "✅ Raqamlaringiz:\n" + "\n".join([f"📱 {r['phone']}" for r in rows]))
+        "✅ Raqamlaringiz:\n" + "\n".join([f"📱 {r['phone']}" for r in rows]),
+        reply_markup=ReplyKeyboardRemove())
 
 
 @router.message(Command("unregister"))
@@ -108,7 +119,9 @@ async def cmd_unregister(message: Message):
             "UPDATE parents SET is_active=0 WHERE telegram_id=$1 AND is_active=1",
             message.from_user.id)
     count = int(result.split()[-1])
-    await message.answer("✅ To'xtatildi." if count else "❌ Ro'yxatda emassiz.")
+    await message.answer(
+        "✅ To'xtatildi." if count else "❌ Ro'yxatda emassiz.",
+        reply_markup=ReplyKeyboardRemove())
 
 
 dp.include_router(router)
