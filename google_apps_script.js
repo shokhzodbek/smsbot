@@ -29,7 +29,7 @@
  */
 
 // ━━━ SOZLAMALAR (O'ZGARTIRING) ━━━━━━━━━━━━━━━━━━━━━━━━━
-var WEBHOOK_URL    = "http://YOUR_VPS_IP:5000/webhook/grade";  // ← PUT YOUR REAL SERVER IP HERE!
+var WEBHOOK_URL    = "http://45.130.148.53:5000/webhook/grade";  // ← PUT YOUR REAL SERVER IP HERE!
 var WEBHOOK_SECRET = "change_this_secret_2024";
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

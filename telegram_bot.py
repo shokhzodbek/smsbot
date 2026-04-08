@@ -8,13 +8,18 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config import BOT_TOKEN, normalize_phone
 import db
 
-bot = Bot(token=BOT_TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
 router = Router()
 
 
-async def setup_bot_commands():
+def create_bot_and_dispatcher() -> tuple[Bot, Dispatcher]:
+    bot = Bot(token=BOT_TOKEN)
+    storage = MemoryStorage()
+    dp = Dispatcher(storage=storage)
+    dp.include_router(router)
+    return bot, dp
+
+
+async def setup_bot_commands(bot: Bot):
     await bot.set_my_commands([
         BotCommand(command="start", description="Botni ishga tushurish"),
         BotCommand(command="help", description="Yordam"),
@@ -22,6 +27,8 @@ async def setup_bot_commands():
         BotCommand(command="status", description="Holatni ko'rish"),
         BotCommand(command="unregister", description="Bildirishnomani o'chirish"),
     ])
+
+
 class Registration(StatesGroup):
     phone_input = State()
 
@@ -124,4 +131,3 @@ async def cmd_unregister(message: Message):
         reply_markup=ReplyKeyboardRemove())
 
 
-dp.include_router(router)

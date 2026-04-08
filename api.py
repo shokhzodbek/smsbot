@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from config import WEBHOOK_SECRET, ADMIN_PASSWORD, API_PORT, normalize_phone, log
 import db
 from sender import message_queue, init_queue, telegram_sender_worker
-from telegram_bot import bot, dp, setup_bot_commands
+from telegram_bot import create_bot_and_dispatcher, setup_bot_commands
 
 
 # ─── Lifespan ────────────────────────────────────────────
@@ -26,7 +26,11 @@ async def lifespan(app: FastAPI):
         workers.append(task)
     log.info("Started 3 Telegram sender workers")
 
-    await setup_bot_commands()
+    bot, dp = create_bot_and_dispatcher()
+    app.state.bot = bot
+    app.state.dp = dp
+
+    await setup_bot_commands(bot)
     log.info("Telegram commands menu updated")
 
     # Start Aiogram polling in background
@@ -40,8 +44,8 @@ async def lifespan(app: FastAPI):
     polling_task.cancel()
     for w in workers:
         w.cancel()
-    await dp.stop_polling()
-    await bot.session.close()
+    await app.state.dp.stop_polling()
+    await app.state.bot.session.close()
     await db.close_db()
     log.info("Shutdown complete")
 
