@@ -7,7 +7,7 @@ from fastapi.responses import FileResponse
 
 from config import WEBHOOK_SECRET, ADMIN_PASSWORD, API_PORT, normalize_phone, log
 import db
-from sender import message_queue, init_queue, telegram_sender_worker
+import sender
 from telegram_bot import create_bot_and_dispatcher, setup_bot_commands
 
 
@@ -19,10 +19,10 @@ async def lifespan(app: FastAPI):
     os.makedirs("static", exist_ok=True)
 
     # Start message queue + workers
-    init_queue()
+    sender.init_queue()
     workers = []
     for i in range(3):
-        task = asyncio.create_task(telegram_sender_worker(i))
+        task = asyncio.create_task(sender.telegram_sender_worker(i))
         workers.append(task)
     log.info("Started 3 Telegram sender workers")
 
@@ -116,7 +116,7 @@ async def receive_grade(request: Request):
 
     # Queue messages (non-blocking)
     for p in parents:
-        await message_queue.put({
+        await sender.message_queue.put({
             "chat_id": p["telegram_id"],
             "text": msg,
             "log_data": {
@@ -150,7 +150,7 @@ async def api_stats(request: Request, _=Depends(check_auth)):
             SELECT COUNT(DISTINCT kp.phone) FROM known_phones kp
             INNER JOIN parents p ON kp.phone=p.phone AND p.is_active=1""")
         stats["unconnected"] = stats["known_phones"] - stats["connected"]
-        stats["queue_size"] = message_queue.qsize() if message_queue else 0
+        stats["queue_size"] = sender.message_queue.qsize() if sender.message_queue else 0
     return stats
 
 
@@ -225,6 +225,6 @@ async def admin_page():
 async def health():
     return {
         "status": "running",
-        "queue_size": message_queue.qsize() if message_queue else 0,
+        "queue_size": sender.message_queue.qsize() if sender.message_queue else 0,
         "db_pool": f"{db.db_pool.get_size()}/{db.db_pool.get_max_size()}" if db.db_pool else "N/A"
     }
